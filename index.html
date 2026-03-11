@@ -8,7 +8,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
@@ -27,7 +27,7 @@
 
     body { background: url('PE01.png') no-repeat center center fixed; background-size: cover; margin: 0; min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; }
 
-    #main-dashboard { display: grid; padding: 30px; grid-template-columns: repeat(2, 1fr); gap: 20px; max-width: 400px; margin: auto; background: rgba(255, 255, 255, 0.15); backdrop-filter: blur(10px); border-radius: 30px; border: 1px solid rgba(255, 255, 255, 0.3); box-shadow: 0 20px 50px rgba(0,0,0,0.3); }
+    #main-dashboard { display: none; padding: 30px; grid-template-columns: repeat(2, 1fr); gap: 20px; max-width: 400px; margin: auto; background: rgba(255, 255, 255, 0.15); backdrop-filter: blur(10px); border-radius: 30px; border: 1px solid rgba(255, 255, 255, 0.3); box-shadow: 0 20px 50px rgba(0,0,0,0.3); }
 
     .dashboard-item { background: linear-gradient(145deg, #ffb74d, #e67e22); padding: 25px 15px; border-radius: 20px; text-align: center; cursor: pointer; box-shadow: 6px 6px 12px rgba(0,0,0,0.2), -4px -4px 10px rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3); transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
     .dashboard-item:hover { background: linear-gradient(145deg, #ffcc80, #f39c12); transform: translateY(-8px) scale(1.05); box-shadow: 0 15px 30px rgba(230, 126, 34, 0.4); }
@@ -35,7 +35,17 @@
     .dashboard-item i { font-size: 2.8rem; color: #fff; margin-bottom: 12px; display: block; filter: drop-shadow(2px 4px 6px rgba(0,0,0,0.2)); }
     .dashboard-item span { font-weight: 800; font-size: 1rem; color: #000000; text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.8); }
 
-    .a4-page { background: white !important; width: 210mm; min-height: 290mm; padding: 10mm 15mm; margin: 10px auto; border: 1px solid #000; position: relative; font-size: 14px; line-height: 1.5; display: none; box-shadow: 0 0 20px rgba(0,0,0,0.1); direction: rtl; }
+    .a4-page { 
+        background: white !important; 
+        width: 210mm; 
+        min-height: 297mm; 
+        padding: 15mm 20mm; 
+        margin: 10px auto;
+        box-sizing: border-box;
+        position: relative;
+        overflow: hidden;
+    }
+    
     .input-form-container { padding: 20px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin: 10px auto; width: 90%; border-top: 5px solid var(--accent-color); background: white; }
     .preview-mode .a4-page { display: block !important; }
     .preview-mode .input-form-container { display: none !important; }
@@ -48,62 +58,195 @@
     .official-table th, .official-table td { border: 1px solid #000; padding: 8px; text-align: center; }
     .lined-paper { background-image: linear-gradient(#999 1px, transparent 1px); background-size: 100% 35px; line-height: 35px; min-height: 250px; }
 
-    /* AJOUTS SPÉCIFIQUES POUR ANDROID / MOBILE - SANS SUPPRIMER VOS RÈGLES */
+    .chat-container { background: white; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); overflow: hidden; }
+    .chat-header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 15px; font-weight: bold; }
+    .chat-messages { height: 300px; overflow-y: auto; padding: 15px; background: #f8f9fa; }
+    .message-bubble { max-width: 80%; padding: 10px 15px; border-radius: 18px; margin-bottom: 10px; font-size: 0.9rem; position: relative; animation: slideIn 0.3s ease-out; }
+    .message-sent { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; margin-left: auto; border-bottom-right-radius: 4px; }
+    .message-received { background: #e9ecef; color: #333; margin-right: auto; border-bottom-left-radius: 4px; }
+    .chat-input-area { padding: 15px; background: white; border-top: 1px solid #dee2e6; }
+    .online-indicator { width: 8px; height: 8px; background: #28a745; border-radius: 50%; display: inline-block; margin-left: 5px; animation: pulse 2s infinite; }
+    .offline-indicator { width: 8px; height: 8px; background: #dc3545; border-radius: 50%; display: inline-block; margin-left: 5px; }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+    @keyframes slideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+    .stats-card { background: white; border-radius: 15px; padding: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); transition: transform 0.3s; }
+    .stats-card:hover { transform: translateY(-5px); }
+    .stats-icon { width: 50px; height: 50px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; margin-bottom: 15px; }
+    .stats-number { font-size: 2rem; font-weight: 800; color: #2c3e50; }
+    .chart-container { position: relative; height: 300px; margin-top: 20px; }
+
+    /* STYLES POUR LE LOGIN */
+    #auth_identity {
+        font-family: 'Cairo', sans-serif;
+        font-weight: 600;
+        font-size: 1.1rem;
+        padding: 12px;
+        border: 2px solid #dee2e6;
+        transition: all 0.3s;
+        text-align: center;
+        direction: rtl;
+    }
+    #auth_identity:focus {
+        border-color: #3498db;
+        box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.25);
+    }
+    #auth_pin {
+        font-family: 'Cairo', sans-serif;
+        font-weight: 700;
+        letter-spacing: 8px;
+        font-size: 1.5rem;
+        text-align: center;
+    }
+    .login-error {
+        animation: shake 0.5s ease-in-out;
+    }
+    @keyframes shake {
+        0%, 100% { transform: translateX(0); }
+        25% { transform: translateX(-5px); }
+        75% { transform: translateX(5px); }
+    }
+
     @media (max-width: 768px) {
         .login-card { width: 90%; padding: 1.5rem; }
         #main-dashboard { width: 95%; padding: 15px; gap: 10px; }
         .dashboard-item { padding: 15px 5px; }
         .dashboard-item i { font-size: 2rem; }
-        
-        /* Forcer les conteneurs à prendre toute la largeur sur mobile */
-        .white-box-nav, .model-container-reduced, .input-form-container { 
-            width: 100% !important; 
-            margin: 5px 0 !important; 
-            padding: 10px !important;
-        }
-        
+        .white-box-nav, .model-container-reduced, .input-form-container { width: 100% !important; margin: 5px 0 !important; padding: 10px !important; }
         .white-box-nav { flex-direction: column; height: auto; gap: 10px; }
         .white-box-nav .d-flex { flex-wrap: wrap; justify-content: center; gap: 5px; }
-
-        .a4-page { 
-            width: 100% !important; 
-            height: auto !important; 
-            min-height: auto !important; 
-            padding: 10px !important; 
-            font-size: 11px !important; 
-            overflow-x: hidden;
-        }
-        
-        /* Empêcher le zoom sur les inputs sous Android */
+        .a4-page { width: 100% !important; height: auto !important; min-height: auto !important; padding: 10px !important; font-size: 11px !important; overflow-x: hidden; }
         input, select, textarea { font-size: 16px !important; }
-        
         .section-title { font-size: 1.2rem; }
         .input-line { width: 80px !important; }
+        .chat-messages { height: 200px; }
     }
 
+    /* STYLES D'IMPRESSION */
     @media print {
-        @page { size: A4; margin: 0; }
-        html, body { height: 100%; margin: 0 !important; padding: 0 !important; overflow: hidden; }
-        .no-print, .app-nav, #main-dashboard, .input-form-container, .btn, script { display: none !important; }
-        .content-section { display: block !important; }
-        .a4-page { display: block !important; border: none !important; width: 210mm !important; height: 297mm !important; padding: 10mm !important; margin: 0 !important; box-shadow: none !important; page-break-after: avoid; page-break-before: avoid; transform: scale(0.98); transform-origin: top center; }
+        @page {
+            size: A4;
+            margin: 0;
+        }
+        
+        * {
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+        }
+        
+        html, body {
+            margin: 0 !important;
+            padding: 0 !important;
+            width: 210mm !important;
+            height: 297mm !important;
+            overflow: hidden !important;
+            background: white !important;
+            visibility: hidden;
+        }
+        
+        .printing-active {
+            visibility: visible !important;
+            display: block !important;
+            position: absolute !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 210mm !important;
+            height: 297mm !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            background: white !important;
+            z-index: 99999 !important;
+            overflow: visible !important;
+        }
+        
+        .printing-active * {
+            visibility: visible !important;
+        }
+        
+        .printing-active .no-print,
+        .printing-active .white-box-nav,
+        .printing-active .input-form-container,
+        .printing-active .model-container-reduced,
+        .printing-active button,
+        .printing-active .btn {
+            display: none !important;
+        }
+        
+        .printing-active .a4-page {
+            display: block !important;
+            position: absolute !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 210mm !important;
+            height: 297mm !important;
+            margin: 0 !important;
+            padding: 15mm !important;
+            box-sizing: border-box !important;
+            border: none !important;
+            box-shadow: none !important;
+            transform: none !important;
+            page-break-after: avoid !important;
+            background: white !important;
+            visibility: visible !important;
+            overflow: visible !important;
+        }
+        
+        .printing-active .a4-page * {
+            max-width: 180mm !important;
+            visibility: visible !important;
+        }
+        
+        .printing-active .row {
+            margin-left: 0 !important;
+            margin-right: 0 !important;
+        }
+        
+        .printing-active [class*="col-"] {
+            padding-left: 3mm !important;
+            padding-right: 3mm !important;
+        }
+        
+        .printing-active input,
+        .printing-active textarea {
+            border: none !important;
+            border-bottom: 1px dotted #000 !important;
+            background: transparent !important;
+        }
     }
     </style>
 </head>
 <body>
 
+<!-- ÉCRAN DE LOGIN -->
 <div id="login-screen">
     <div class="login-card">
-        <img src="image_0.png" style="height: 80px; margin-bottom: 15px;">
-        <h4 class="fw-bold text-primary">An informal experimental space exclusive to the Water Police / Concept and Achievement - SOUAI. M.A-I.C/SDH/N'GAOUS</h4>
+        <img src="image_0.png" style="height: 80px; margin-bottom: 15px;" onerror="this.style.display='none'">
+        <h4 class="fw-bold text-primary mb-3">فضاء شرطة المياه</h4>
+        <p class="text-muted small mb-4">منصة إدارة المخالفات الذكية</p>
+        
         <form onsubmit="handleLogin(event)">
-            <input type="text" id="auth_name" class="form-control mb-2 text-center" placeholder="اسم المفتش" required>
-            <div class="row g-2 mb-2">
-                <div class="col-6"><input type="text" id="auth_wilaya" class="form-control text-center" placeholder="الولاية" required></div>
-                <div class="col-6"><input type="text" id="auth_rank" class="form-control text-center" placeholder="الرتبة" required></div>
+            <!-- Sélecteur d'identité -->
+            <div class="mb-3">
+                <label class="form-label fw-bold small text-primary">الهوية المهنية</label>
+                <select id="auth_identity" class="form-select" required>
+                    <option value="" disabled selected>اختر الهوية...</option>
+                </select>
             </div>
-            <input type="password" id="auth_pin" class="form-control mb-3 text-center" placeholder="PIN" maxlength="4" required>
-            <button type="submit" class="btn btn-primary w-100 rounded-pill">دخول آمن</button>
+            
+            <!-- Champ PIN -->
+            <div class="mb-3">
+                <label class="form-label fw-bold small text-primary">رمز الدخول</label>
+                <input type="password" id="auth_pin" class="form-control text-center" placeholder="••••" required>
+            </div>
+            
+            <button type="submit" class="btn btn-primary w-100 rounded-pill">
+                <i class="fas fa-shield-alt me-2"></i> دخول آمن
+            </button>
+            
+            <div class="mt-3 text-center">
+                <small class="text-muted d-block">فكرة وإنجاز: سواعي محمد عزالدين</small>
+                <small class="text-muted">رئيس مفتش شرطة المياه - نقاوس</small>
+            </div>
         </form>
     </div>
 </div>
@@ -115,12 +258,159 @@
     <div class="dashboard-item" onclick="openSection('bordereau')"><i class="fas fa-folder-open"></i><span>جدول إرسال (BE)</span></div>
     <div class="dashboard-item" onclick="openSection('legal-file')"><i class="fas fa-file-pdf text-danger"></i><span>قانون المياه</span></div>
     <div class="dashboard-item" onclick="openSection('archive')"><i class="fas fa-server"></i><span>الأرشيف</span></div>
+    <div class="dashboard-item" onclick="openSection('chat-section')" style="background: linear-gradient(145deg, #667eea, #764ba2);"><i class="fas fa-comments"></i><span>المركز الداخلي</span></div>
+    <div class="dashboard-item" id="stats-dashboard-item" onclick="openSection('stats-section')" style="background: linear-gradient(145deg, #11998e, #38ef7d);"><i class="fas fa-chart-pie"></i><span>الإحصائيات</span></div>
     <div class="dashboard-item" onclick="logout()" style="grid-column: span 2; background: #fff5f5;"><i class="fas fa-power-off text-danger"></i><span>خروج</span></div>
 </div>
 
 <div id="app-interface" style="display:none">
     <div class="main-content container-fluid">
-        <<div id="pv-infraction" class="content-section">
+        
+        <!-- SECTION CHAT -->
+        <div id="chat-section" class="content-section d-none">
+            <div class="white-box-nav d-flex justify-content-between mb-3 no-print align-items-center bg-white p-3 rounded shadow-sm border" style="width: 60%; margin: auto;">
+                <h4 class="fw-bold text-dark m-0"><i class="fas fa-comments me-2 text-primary"></i>المركز الداخلي - تواصل المفتشين</h4>
+                <button class="btn btn-dark btn-sm" onclick="backToDashboard()"><i class="fas fa-home"></i> الرئيسية</button>
+            </div>
+
+            <div class="row g-4" style="width: 80%; margin: auto;">
+                <div class="col-md-8">
+                    <div class="chat-container">
+                        <div class="chat-header d-flex justify-content-between align-items-center">
+                            <div>
+                                <i class="fas fa-shield-alt me-2"></i>
+                                غرفة المحادثة الآمنة
+                            </div>
+                            <div class="d-flex align-items-center">
+                                <small id="chat-status-text" class="me-2">غير متصل</small>
+                                <span id="chat-connection-status" class="offline-indicator"></span>
+                            </div>
+                        </div>
+                        <div class="chat-messages" id="chat-messages">
+                            <div class="text-center text-muted py-5">
+                                <i class="fas fa-comments fa-3x mb-3 opacity-25"></i>
+                                <p>لا توجد رسائل بعد. ابدأ المحادثة!</p>
+                            </div>
+                        </div>
+                        <div class="chat-input-area">
+                            <div class="input-group">
+                                <input type="text" id="msg-input" class="form-control" placeholder="اكتب رسالتك هنا..." onkeypress="handleChatKeyPress(event)">
+                                <button class="btn btn-primary" onclick="sendMessage()">
+                                    <i class="fas fa-paper-plane"></i> إرسال
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="card h-100 border-0 shadow-sm">
+                        <div class="card-header bg-success text-white">
+                            <i class="fas fa-users me-2"></i>المفتشون المتصلون
+                        </div>
+                        <div class="card-body" id="online-users-list">
+                            <div class="text-center text-muted py-4">
+                                <i class="fas fa-circle-notch fa-spin mb-2"></i>
+                                <p>جاري التحميل...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SECTION STATISTIQUES -->
+        <div id="stats-section" class="content-section d-none">
+            <div class="white-box-nav d-flex justify-content-between mb-3 no-print align-items-center bg-white p-3 rounded shadow-sm border" style="width: 60%; margin: auto;">
+                <h4 class="fw-bold text-dark m-0" id="stats-title"><i class="fas fa-chart-line me-2 text-success"></i>إحصائيات وتحليلات الأداء</h4>
+                <button class="btn btn-dark btn-sm" onclick="backToDashboard()"><i class="fas fa-home"></i> الرئيسية</button>
+            </div>
+
+            <div style="width: 85%; margin: auto;">
+                <div class="row g-4 mb-4">
+                    <div class="col-md-3">
+                        <div class="stats-card text-center">
+                            <div class="stats-icon bg-primary bg-opacity-10 text-primary mx-auto">
+                                <i class="fas fa-archive"></i>
+                            </div>
+                            <div class="stats-number" id="total-docs-stat">0</div>
+                            <div class="text-muted">إجمالي الوثائق</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stats-card text-center">
+                            <div class="stats-icon bg-success bg-opacity-10 text-success mx-auto">
+                                <i class="fas fa-clock"></i>
+                            </div>
+                            <div class="stats-number" id="recent-docs-stat">0</div>
+                            <div class="text-muted">آخر 24 ساعة</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stats-card text-center">
+                            <div class="stats-icon bg-info bg-opacity-10 text-info mx-auto">
+                                <i class="fas fa-trophy"></i>
+                            </div>
+                            <div class="stats-number" id="top-inspector-stat">-</div>
+                            <div class="text-muted">أنشط مفتش</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stats-card text-center">
+                            <div class="stats-icon bg-warning bg-opacity-10 text-warning mx-auto">
+                                <i class="fas fa-calendar-day"></i>
+                            </div>
+                            <div class="stats-number" id="month-docs-stat">0</div>
+                            <div class="text-muted">هذا الشهر</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <div class="stats-card">
+                            <h5 class="fw-bold mb-3 text-center"><i class="fas fa-chart-pie me-2 text-primary"></i>توزيع المحاضر حسب المفتشين</h5>
+                            <div class="chart-container">
+                                <canvas id="chartInspectors"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="stats-card">
+                            <h5 class="fw-bold mb-3 text-center"><i class="fas fa-chart-area me-2 text-success"></i>وتيرة العمل اليومية</h5>
+                            <div class="chart-container">
+                                <canvas id="chartTime"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row mt-4">
+                    <div class="col-12">
+                        <div class="stats-card">
+                            <h5 class="fw-bold mb-3"><i class="fas fa-table me-2 text-info"></i>تفاصيل النشاط حسب المفتش</h5>
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead class="table-dark">
+                                        <tr>
+                                            <th>المفتش</th>
+                                            <th>عدد المحاضر</th>
+                                            <th>آخر نشاط</th>
+                                            <th>النسبة المئوية</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="stats-table-body">
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- PV INFRACTION -->
+        <div id="pv-infraction" class="content-section d-none">
             <div class="white-box-nav d-flex justify-content-between mb-3 no-print align-items-center bg-white p-3 rounded shadow-sm border" style="width: 40%; margin: auto;">
                 <h4 class="fw-bold text-dark m-0">تحرير محضر معاينة</h4>
                 <div class="d-flex gap-2">
@@ -129,55 +419,45 @@
                     <button class="btn btn-warning btn-sm text-white" onclick="downloadAsPNG('form-infraction')"><i class="fas fa-image"></i> حفظ صورة</button>
                     <button class="btn btn-info btn-preview btn-sm text-white" onclick="toggleMode('pv-infraction')"><i class="fas fa-eye"></i> معاينة</button>
                     <button class="btn btn-success btn-sm" onclick="saveArchive('معاينة', 'inf_name_field', 'form-infraction')"><i class="fas fa-save"></i> حفظ وأرشفة</button>
-                    <button class="btn btn-primary btn-sm" onclick="printDocument('pv-infraction')"><i class="fas fa-print"></i> طباعة</button>
+                    <button class="btn btn-primary btn-sm" onclick="printDocument('pv-infraction', 'form-infraction')"><i class="fas fa-print"></i> طباعة</button>
                  </div>
             </div>
 
            <div class="model-container-reduced no-print mx-auto" style="width: 45%;">
-    
-    <div class="input-form-container p-3 bg-light rounded shadow-sm border-start border-4 border-info">
-        <h6 class="fw-bold mb-3 text-secondary text-center"><i class="fas fa-edit me-2"></i>إدخال بيانات المحضر</h6>
-        
-        <div class="row g-2">
-            <div class="col-md-3"><label class="form-label fw-bold">ولاية</label><input type="text" class="form-control form-control-sm" oninput="sync(this, 'inf1')"></div>
-            <div class="col-md-3"><label class="form-label fw-bold">رقم المحضر</label><input type="text" class="form-control form-control-sm" oninput="sync(this, 'inf2')"></div>
-            <div class="col-md-3"><label class="form-label fw-bold">السنة</label><input type="text" class="form-control form-control-sm" oninput="sync(this, 'inf3')"></div>
-            <div class="col-md-3"><label class="form-label fw-bold">مؤرخ في</label><input type="date" class="form-control form-control-sm" oninput="sync(this, 'inf4')"></div>
-            
-            <div class="col-md-3"><label class="form-label fw-bold">يوم (نصاً)</label><input type="text" class="form-control form-control-sm" oninput="sync(this, 'inf5')"></div>
-            <div class="col-md-3"><label class="form-label fw-bold">من شهر</label><input type="text" class="form-control form-control-sm" oninput="sync(this, 'inf6')"></div>
-            <div class="col-md-3"><label class="form-label fw-bold">سنة (نصاً)</label><input type="text" class="form-control form-control-sm" oninput="sync(this, 'inf7')"></div>
-            <div class="col-md-3"><label class="form-label fw-bold">اسم المفتش</label><input type="text" class="form-control form-control-sm" oninput="sync(this, 'inf8')"></div>
-            
-            <div class="col-12 my-1"><hr class="opacity-10"></div>
-            
-            <div class="col-md-6"><label class="form-label fw-bold text-primary">اسم ولقب المخالف</label><input type="text" id="inf_name_field" class="form-control form-control-sm border-primary" oninput="sync(this, 'inf11')"></div>
-            <div class="col-md-6"><label class="form-label fw-bold">تاريخ الميلاد</label><input type="date" class="form-control form-control-sm" oninput="sync(this, 'inf12')"></div>
-            <div class="col-md-12"><label class="form-label fw-bold">العنوان الكامل</label><input type="text" class="form-control form-control-sm" oninput="sync(this, 'inf13')"></div>
-            
-            <div class="col-md-4"><label class="form-label fw-bold">بطاقة هوية</label><input type="text" class="form-control form-control-sm" oninput="sync(this, 'inf14')"></div>
-            <div class="col-md-4"><label class="form-label fw-bold">صادرة عن</label><input type="text" class="form-control form-control-sm" oninput="sync(this, 'inf15')"></div>
-            <div class="col-md-4"><label class="form-label fw-bold">بتاريخ</label><input type="date" class="form-control form-control-sm" oninput="sync(this, 'inf16')"></div>
-            
-            <div class="col-12 my-1"><hr class="opacity-10"></div>
-            
-            <div class="col-md-6"><label class="form-label fw-bold text-danger">المخالفة المرتكبة</label><input type="text" class="form-control form-control-sm border-danger" oninput="sync(this, 'inf17')"></div>
-            <div class="col-md-3"><label class="form-label fw-bold">المكان المسمى</label><input type="text" class="form-control form-control-sm" oninput="sync(this, 'inf18')"></div>
-            <div class="col-md-3"><label class="form-label fw-bold">البلدية</label><input type="text" class="form-control form-control-sm" oninput="sync(this, 'inf19')"></div>
-            
-            <div class="col-md-6"><label class="form-label fw-bold">تصريحات المخالف</label><textarea class="form-control form-control-sm" rows="2" style="font-size: 0.8rem;" oninput="sync(this, 'inf20')"></textarea></div>
-            <div class="col-md-6"><label class="form-label fw-bold">ملاحظات المفتش</label><textarea class="form-control form-control-sm" rows="2" style="font-size: 0.8rem;" oninput="sync(this, 'inf21')"></textarea></div>
-        </div>
-    </div>
-</div>
+                <div class="input-form-container p-3 bg-light rounded shadow-sm border-start border-4 border-info">
+                    <h6 class="fw-bold mb-3 text-secondary text-center"><i class="fas fa-edit me-2"></i>إدخال بيانات المحضر</h6>
+                    <div class="row g-2">
+                        <div class="col-md-3"><label class="form-label fw-bold">ولاية</label><input type="text" class="form-control form-control-sm" oninput="sync(this, 'inf1')"></div>
+                        <div class="col-md-3"><label class="form-label fw-bold">رقم المحضر</label><input type="text" class="form-control form-control-sm" oninput="sync(this, 'inf2')"></div>
+                        <div class="col-md-3"><label class="form-label fw-bold">السنة</label><input type="text" class="form-control form-control-sm" oninput="sync(this, 'inf3')"></div>
+                        <div class="col-md-3"><label class="form-label fw-bold">مؤرخ في</label><input type="date" class="form-control form-control-sm" oninput="sync(this, 'inf4')"></div>
+                        <div class="col-md-3"><label class="form-label fw-bold">يوم (نصاً)</label><input type="text" class="form-control form-control-sm" oninput="sync(this, 'inf5')"></div>
+                        <div class="col-md-3"><label class="form-label fw-bold">من شهر</label><input type="text" class="form-control form-control-sm" oninput="sync(this, 'inf6')"></div>
+                        <div class="col-md-3"><label class="form-label fw-bold">سنة (نصاً)</label><input type="text" class="form-control form-control-sm" oninput="sync(this, 'inf7')"></div>
+                        <div class="col-md-3"><label class="form-label fw-bold">اسم المفتش</label><input type="text" class="form-control form-control-sm agent-auto-fill" oninput="sync(this, 'inf8')"></div>
+                        <div class="col-12 my-1"><hr class="opacity-10"></div>
+                        <div class="col-md-6"><label class="form-label fw-bold text-primary">اسم ولقب المخالف</label><input type="text" id="inf_name_field" class="form-control form-control-sm border-primary" oninput="sync(this, 'inf11')"></div>
+                        <div class="col-md-6"><label class="form-label fw-bold">تاريخ الميلاد</label><input type="date" class="form-control form-control-sm" oninput="sync(this, 'inf12')"></div>
+                        <div class="col-md-12"><label class="form-label fw-bold">العنوان الكامل</label><input type="text" class="form-control form-control-sm" oninput="sync(this, 'inf13')"></div>
+                        <div class="col-md-4"><label class="form-label fw-bold">بطاقة هوية</label><input type="text" class="form-control form-control-sm" oninput="sync(this, 'inf14')"></div>
+                        <div class="col-md-4"><label class="form-label fw-bold">صادرة عن</label><input type="text" class="form-control form-control-sm" oninput="sync(this, 'inf15')"></div>
+                        <div class="col-md-4"><label class="form-label fw-bold">بتاريخ</label><input type="date" class="form-control form-control-sm" oninput="sync(this, 'inf16')"></div>
+                        <div class="col-12 my-1"><hr class="opacity-10"></div>
+                        <div class="col-md-6"><label class="form-label fw-bold text-danger">المخالفة المرتكبة</label><input type="text" class="form-control form-control-sm border-danger" oninput="sync(this, 'inf17')"></div>
+                        <div class="col-md-3"><label class="form-label fw-bold">المكان المسمى</label><input type="text" class="form-control form-control-sm" oninput="sync(this, 'inf18')"></div>
+                        <div class="col-md-3"><label class="form-label fw-bold">البلدية</label><input type="text" class="form-control form-control-sm" oninput="sync(this, 'inf19')"></div>
+                        <div class="col-md-6"><label class="form-label fw-bold">تصريحات المخالف</label><textarea class="form-control form-control-sm" rows="2" style="font-size: 0.8rem;" oninput="sync(this, 'inf20')"></textarea></div>
+                        <div class="col-md-6"><label class="form-label fw-bold">ملاحظات المفتش</label><textarea class="form-control form-control-sm" rows="2" style="font-size: 0.8rem;" oninput="sync(this, 'inf21')"></textarea></div>
+                    </div>
+                </div>
+            </div>
 
             <div class="a4-page shadow" id="form-infraction">
                 <div class="header-official text-center">
                     <h4>الجمهورية الجزائرية الديمقراطية الشعبية</h4>
-                    
-                        <h4>وزارة الري</h4>
-                    </div>
-                            <div class="d-flex justify-content-between mt-3 px-3">
+                    <h4>وزارة الري</h4>
+                </div>
+                <div class="d-flex justify-content-between mt-3 px-3">
                     <div>مديرية الري لولاية: <input type="text" id="inf1" class="input-line" style="width:160px;"></div>
                     <div class="text-start">محضر رقم: <input type="text" id="inf2" class="input-line" style="width:70px;"> / <input type="text" id="inf3" class="input-line" style="width:55px;"><br>مؤرخ في: <input type="text" id="inf4" class="input-line"></div>
                 </div>
@@ -185,7 +465,7 @@
                 <div style="line-height: 1.8;" class="px-3">
                     تطبيقاً لأحكام القانون رقم 12-05 المؤرخ في 04 أوت 2005 المتعلق بالمياه. <br>
                     في يوم: <input type="text" id="inf5" class="input-line" style="width:90px;"> من شهر: <input type="text" id="inf6" class="input-line" style="width:110px;"> سنة: <input type="text" id="inf7" class="input-line" style="width:180px;">. <br>
-                    نحن السيد: <input type="text" id="inf8" class="input-line" style="width:230px;"> بصفتنا: <input type="text" class="input-line" style="width:180px;" value="مفتش شرطة المياه">. <br>
+                    نحن السيد: <input type="text" id="inf8" class="input-line agent-auto-fill" style="width:230px;"> بصفتنا: <input type="text" class="input-line" style="width:180px;" value="مفتش شرطة المياه">. <br>
                     المعين بقرار وزاري رقم: <input type="text" id="inf9" class="input-line" style="width:90px;"> المؤرخ في: <input type="text" id="inf10" class="input-line">. <br>
                     أثناء قيامنا بمهامنا، قمنا بمعاينة مخالفة <strong>ضد السيد(ة):</strong>
                 </div>
@@ -216,8 +496,9 @@
             </div>
         </div>
 
+        <!-- PV AUDITION -->
         <div id="pv-audition" class="content-section d-none">
-             <div class="white-box-nav d-flex justify-content-between mb-3 no-print align-items-center bg-white p-3 rounded shadow-sm border" style="width: 40%; margin: auto;">
+            <div class="white-box-nav d-flex justify-content-between mb-3 no-print align-items-center bg-white p-3 rounded shadow-sm border" style="width: 40%; margin: auto;">
                 <h4 class="fw-bold text-dark m-0">تحرير محضر سماع</h4>
                 <div class="d-flex gap-2">
                     <button class="btn btn-dark btn-sm" onclick="backToDashboard()"><i class="fas fa-home"></i> الرئيسية</button>
@@ -225,49 +506,40 @@
                     <button class="btn btn-warning btn-sm text-white" onclick="downloadAsPNG('form-audition')">صورة</button>
                     <button class="btn btn-info btn-preview btn-sm text-white" onclick="toggleMode('pv-audition')">معاينة</button>
                     <button class="btn btn-success btn-sm" onclick="saveArchive('سماع', 'aud_name_main', 'form-audition')">حفظ</button>
-                    <button class="btn btn-primary btn-sm" onclick="printDocument('pv-audition')"><i class="fas fa-print"></i> طباعة</button>
+                    <button class="btn btn-primary btn-sm" onclick="printDocument('pv-audition', 'form-audition')"><i class="fas fa-print"></i> طباعة</button>
                 </div>
             </div>
 
-           <div class="model-container-reduced no-print mx-auto" style="width: 45%;">
-    
-    <div class="input-form-container p-3 bg-light rounded shadow-sm border-start border-4 border-primary">
-        <h6 class="fw-bold mb-3 text-primary text-center"><i class="fas fa-user-voice me-2"></i> إدخال بيانات محضر السماع</h6>
-        
-        <div class="row g-2">
-            <div class="col-md-6"><label class="form-label fw-bold small">ولاية</label><input type="text" class="form-control form-control-sm" oninput="sync(this, 'aud_w')"></div>
-            <div class="col-md-3"><label class="form-label fw-bold small">رقم المحضر</label><input type="text" class="form-control form-control-sm" oninput="sync(this, 'aud_n')"></div>
-            <div class="col-md-3"><label class="form-label fw-bold small">السنة</label><input type="text" class="form-control form-control-sm" oninput="sync(this, 'aud_y')"></div>
-            
-            <div class="col-md-6"><label class="form-label fw-bold small">المؤرخ في</label><input type="date" class="form-control form-control-sm" oninput="sync(this, 'aud_d')"></div>
-            <div class="col-md-6"><label class="form-label fw-bold small">اسم المفتش</label><input type="text" class="form-control form-control-sm" oninput="sync(this, 'aud_ag')"></div>
-            
-            <div class="col-12 my-1"><hr class="opacity-10"></div>
-            
-            <div class="col-md-6"><label class="form-label fw-bold small text-primary">اسم المعني بالسماع</label><input type="text" id="aud_name_main" class="form-control form-control-sm border-primary" oninput="sync(this, 'aud_fn')"></div>
-            <div class="col-md-6"><label class="form-label fw-bold small text-primary">اللقب</label><input type="text" class="form-control form-control-sm border-primary" oninput="sync(this, 'aud_ln')"></div>
-            
-            <div class="col-md-4"><label class="form-label fw-bold small">تاريخ الميلاد</label><input type="date" class="form-control form-control-sm" oninput="sync(this, 'aud_birth')"></div>
-            <div class="col-md-8"><label class="form-label fw-bold small">بـــــ (مكان الميلاد)</label><input type="text" class="form-control form-control-sm" oninput="sync(this, 'aud_p')"></div>
-            
-            <div class="col-md-4"><label class="form-label fw-bold small">بطاقة التعريف رقم</label><input type="text" class="form-control form-control-sm" oninput="sync(this, 'aud_id_n')"></div>
-            <div class="col-md-4"><label class="form-label fw-bold small">الصادرة عن</label><input type="text" class="form-control form-control-sm" oninput="sync(this, 'aud_id_s')"></div>
-            <div class="col-md-4"><label class="form-label fw-bold small">بتاريخ</label><input type="date" class="form-control form-control-sm" oninput="sync(this, 'aud_id_d')"></div>
-            
-            <div class="col-12 my-1"><hr class="opacity-10"></div>
-            
-            <div class="col-md-12">
-                <label class="form-label fw-bold small text-dark">تصريحات المعني (نص المحضر)</label>
-                <textarea class="form-control form-control-sm bg-white" rows="6" style="font-size: 0.85rem; line-height: 1.6;" oninput="sync(this, 'aud_text')"></textarea>
+            <div class="model-container-reduced no-print mx-auto" style="width: 45%;">
+                <div class="input-form-container p-3 bg-light rounded shadow-sm border-start border-4 border-primary">
+                    <h6 class="fw-bold mb-3 text-primary text-center"><i class="fas fa-user-voice me-2"></i> إدخال بيانات محضر السماع</h6>
+                    <div class="row g-2">
+                        <div class="col-md-6"><label class="form-label fw-bold small">ولاية</label><input type="text" class="form-control form-control-sm" oninput="sync(this, 'aud_w')"></div>
+                        <div class="col-md-3"><label class="form-label fw-bold small">رقم المحضر</label><input type="text" class="form-control form-control-sm" oninput="sync(this, 'aud_n')"></div>
+                        <div class="col-md-3"><label class="form-label fw-bold small">السنة</label><input type="text" class="form-control form-control-sm" oninput="sync(this, 'aud_y')"></div>
+                        <div class="col-md-6"><label class="form-label fw-bold small">المؤرخ في</label><input type="date" class="form-control form-control-sm" oninput="sync(this, 'aud_d')"></div>
+                        <div class="col-md-6"><label class="form-label fw-bold small">اسم المفتش</label><input type="text" class="form-control form-control-sm agent-auto-fill" oninput="sync(this, 'aud_ag')"></div>
+                        <div class="col-12 my-1"><hr class="opacity-10"></div>
+                        <div class="col-md-6"><label class="form-label fw-bold small text-primary">اسم المعني بالسماع</label><input type="text" id="aud_name_main" class="form-control form-control-sm border-primary" oninput="sync(this, 'aud_fn')"></div>
+                        <div class="col-md-6"><label class="form-label fw-bold small text-primary">اللقب</label><input type="text" class="form-control form-control-sm border-primary" oninput="sync(this, 'aud_ln')"></div>
+                        <div class="col-md-4"><label class="form-label fw-bold small">تاريخ الميلاد</label><input type="date" class="form-control form-control-sm" oninput="sync(this, 'aud_birth')"></div>
+                        <div class="col-md-8"><label class="form-label fw-bold small">بـــــ (مكان الميلاد)</label><input type="text" class="form-control form-control-sm" oninput="sync(this, 'aud_p')"></div>
+                        <div class="col-md-4"><label class="form-label fw-bold small">بطاقة التعريف رقم</label><input type="text" class="form-control form-control-sm" oninput="sync(this, 'aud_id_n')"></div>
+                        <div class="col-md-4"><label class="form-label fw-bold small">الصادرة عن</label><input type="text" class="form-control form-control-sm" oninput="sync(this, 'aud_id_s')"></div>
+                        <div class="col-md-4"><label class="form-label fw-bold small">بتاريخ</label><input type="date" class="form-control form-control-sm" oninput="sync(this, 'aud_id_d')"></div>
+                        <div class="col-12 my-1"><hr class="opacity-10"></div>
+                        <div class="col-md-12">
+                            <label class="form-label fw-bold small text-dark">تصريحات المعني (نص المحضر)</label>
+                            <textarea class="form-control form-control-sm bg-white" rows="6" style="font-size: 0.85rem; line-height: 1.6;" oninput="sync(this, 'aud_text')"></textarea>
+                        </div>
+                    </div>
+                </div>
             </div>
-        </div>
-    </div>
-</div>
+            
             <div class="a4-page shadow" id="form-audition">
                 <div class="header-official text-center">
                     <h5 class="fw-bold">الجمهورية الجزائرية الديمقراطية الشعبية</h5>
-                    
-                        <h4>وزارة الري</h4>
+                    <h4>وزارة الري</h4>
                     <div class="mt-2 text-end">مديرية الري لولاية: <input type="text" id="aud_w" class="input-line" style="width: 150px;"></div>
                     <div class="d-flex justify-content-between mt-3 px-3">
                         <div></div>
@@ -280,7 +552,7 @@
                 <h4 class="text-center fw-bold text-decoration-underline my-4">محضر سماع</h4>
                 <div class="law-text-block px-3" style="line-height: 2;">
                     <p>تبعا للإجراءات الخاصة بمعاينة مخالفة لأحكام القانون رقم 12-05 المؤرخ في 04 أوت 2005 و المتعلق بالمياه.<br>
-                    قمنا نحن السيد: <input type="text" id="aud_ag" class="input-line" style="width: 250px;"><br>
+                    قمنا نحن السيد: <input type="text" id="aud_ag" class="input-line agent-auto-fill" style="width: 250px;"><br>
                     بصفتنا: <input type="text" class="input-line" style="width: 300px;" value="مفتش شرطة المياه"><br>
                     بسماع السيد / الاسم: <input type="text" id="aud_fn" class="input-line" style="width: 200px;"> &nbsp;&nbsp;اللقب: <input type="text" id="aud_ln" class="input-line" style="width: 200px;"><br>
                     المولود بتاريخ: <input type="text" id="aud_birth" class="input-line" style="width: 140px;"> &nbsp;&nbsp;بـــ: <input type="text" id="aud_p" class="input-line" style="width: 200px;"><br>
@@ -297,6 +569,7 @@
             </div>
         </div>
 
+        <!-- CONVOCATION -->
         <div id="convocation" class="content-section d-none">
             <div class="white-box-nav d-flex justify-content-between mb-3 no-print align-items-center bg-white p-3 rounded shadow-sm border" style="width: 40%; margin: auto;">
                 <h4 class="fw-bold text-dark m-0">تحرير استدعاء رسمي</h4>
@@ -306,74 +579,36 @@
                     <button class="btn btn-warning btn-sm text-white" onclick="downloadAsPNG('form-convocation')">صورة</button>
                     <button class="btn btn-info btn-preview btn-sm text-white" onclick="toggleMode('convocation')">معاينة</button>
                     <button class="btn btn-success btn-sm" onclick="saveArchive('استدعاء', 'conv_name_field', 'form-convocation')">حفظ</button>
-                    <button class="btn btn-primary btn-sm" onclick="printDocument('convocation')"><i class="fas fa-print"></i> طباعة</button>
+                    <button class="btn btn-primary btn-sm" onclick="printDocument('convocation', 'form-convocation')"><i class="fas fa-print"></i> طباعة</button>
                 </div>
             </div>
 
             <div class="model-container-reduced no-print mx-auto" style="width: 45%;">
-    
-    <div class="input-form-container p-3 bg-light rounded shadow-sm border-start border-4 border-warning">
-        <h6 class="fw-bold mb-3 text-dark text-center">
-            <i class="fas fa-envelope-open-text me-2 text-warning"></i> إدخال بيانات الاستدعاء الرسمي
-        </h6>
-        
-        <div class="row g-2">
-            <div class="col-md-4">
-                <label class="form-label fw-bold small">ولاية</label>
-                <input type="text" class="form-control form-control-sm" oninput="sync(this, 'cv1')">
-            </div>
-            <div class="col-md-4">
-                <label class="form-label fw-bold small">رقم الاستدعاء</label>
-                <input type="text" class="form-control form-control-sm" oninput="sync(this, 'cv2')">
-            </div>
-            <div class="col-md-4">
-                <label class="form-label fw-bold small">السنة</label>
-                <input type="text" class="form-control form-control-sm" oninput="sync(this, 'cv3')">
+                <div class="input-form-container p-3 bg-light rounded shadow-sm border-start border-4 border-warning">
+                    <h6 class="fw-bold mb-3 text-dark text-center"><i class="fas fa-envelope-open-text me-2 text-warning"></i> إدخال بيانات الاستدعاء الرسمي</h6>
+                    <div class="row g-2">
+                        <div class="col-md-4"><label class="form-label fw-bold small">ولاية</label><input type="text" class="form-control form-control-sm" oninput="sync(this, 'cv1')"></div>
+                        <div class="col-md-4"><label class="form-label fw-bold small">رقم الاستدعاء</label><input type="text" class="form-control form-control-sm" oninput="sync(this, 'cv2')"></div>
+                        <div class="col-md-4"><label class="form-label fw-bold small">السنة</label><input type="text" class="form-control form-control-sm" oninput="sync(this, 'cv3')"></div>
+                        <div class="col-md-6"><label class="form-label fw-bold small">مكان التحرير</label><input type="text" class="form-control form-control-sm" oninput="sync(this, 'cv4')"></div>
+                        <div class="col-md-6"><label class="form-label fw-bold small">تاريخ التحرير</label><input type="date" class="form-control form-control-sm" oninput="sync(this, 'cv5')"></div>
+                        <div class="col-12 my-1"><hr class="opacity-10"></div>
+                        <div class="col-md-6"><label class="form-label fw-bold small text-primary">اسم ولقب المستدعى</label><input type="text" id="conv_name_field" class="form-control form-control-sm border-primary" oninput="sync(this, 'cv6')"></div>
+                        <div class="col-md-6"><label class="form-label fw-bold small">الساكن بـ</label><input type="text" class="form-control form-control-sm" oninput="sync(this, 'cv7')"></div>
+                        <div class="col-md-6"><label class="form-label fw-bold small">المكان المقصود</label><input type="text" class="form-control form-control-sm" placeholder="مثلاً: مصلحة شرطة المياه" oninput="sync(this, 'cv8')"></div>
+                        <div class="col-md-3"><label class="form-label fw-bold small">يوم الحضور</label><input type="date" class="form-control form-control-sm" oninput="sync(this, 'cv9')"></div>
+                        <div class="col-md-3"><label class="form-label fw-bold small">على الساعة</label><input type="text" class="form-control form-control-sm text-center" placeholder="09:00" oninput="sync(this, 'cv10')"></div>
+                    </div>
+                </div>
             </div>
             
-            <div class="col-md-6">
-                <label class="form-label fw-bold small">مكان التحرير</label>
-                <input type="text" class="form-control form-control-sm" oninput="sync(this, 'cv4')">
-            </div>
-            <div class="col-md-6">
-                <label class="form-label fw-bold small">تاريخ التحرير</label>
-                <input type="date" class="form-control form-control-sm" oninput="sync(this, 'cv5')">
-            </div>
-            
-            <div class="col-12 my-1"><hr class="opacity-10"></div>
-            
-            <div class="col-md-6">
-                <label class="form-label fw-bold small text-primary">اسم ولقب المستدعى</label>
-                <input type="text" id="conv_name_field" class="form-control form-control-sm border-primary" oninput="sync(this, 'cv6')">
-            </div>
-            <div class="col-md-6">
-                <label class="form-label fw-bold small">الساكن بـ</label>
-                <input type="text" class="form-control form-control-sm" oninput="sync(this, 'cv7')">
-            </div>
-            
-            <div class="col-md-6">
-                <label class="form-label fw-bold small">المكان المقصود</label>
-                <input type="text" class="form-control form-control-sm" placeholder="مثلاً: مصلحة شرطة المياه" oninput="sync(this, 'cv8')">
-            </div>
-            <div class="col-md-3">
-                <label class="form-label fw-bold small">يوم الحضور</label>
-                <input type="date" class="form-control form-control-sm" oninput="sync(this, 'cv9')">
-            </div>
-            <div class="col-md-3">
-                <label class="form-label fw-bold small">على الساعة</label>
-                <input type="text" class="form-control form-control-sm text-center" placeholder="09:00" oninput="sync(this, 'cv10')">
-            </div>
-        </div>
-    </div>
-</div>
             <div class="a4-page shadow" id="form-convocation">
                 <div class="header-official text-center">
                     <h4>الجمهورية الجزائرية الديمقراطية الشعبية</h4>
-                    
-                        <h4>وزارة الري</h4>
+                    <h4>وزارة الري</h4>
                     <div class="text-end mt-2 px-3">مديرية الري لولاية: <input type="text" id="cv1" class="input-line" style="width:140px;"><br>مصلحة شرطة المياه</div>
                 </div>
-                <div class="d-flex justify-content-between mt-4 px-3 fw-bold">
+                <div class="d-flex justify-content-between text-sm font-bold mb-8">
                     <div>رقم: <input type="text" id="cv2" class="input-line" style="width:60px;"> / <input type="text" id="cv3" class="input-line" style="width:55px;"></div>
                     <div><input type="text" id="cv4" class="input-line" style="width:100px;"> في: <input type="text" id="cv5" class="input-line"></div>
                 </div>
@@ -386,14 +621,15 @@
                     <strong style="text-decoration: underline;">لأمر يخصه/ مصحوباً بوثائق الهوية الشخصية .</strong>
                 </div>
                 <div class="row mt-5 pt-5 text-center fw-bold">
-                    <div class="col-6"><p class="mb-5">استلم الاستدعاء من طرف</p><p>(الاسم واللقب والتوقيع)</p></div>
+                    <div class="col-6"><p class="mb-5">استلم الاستدعاء من طرف</p><p class="text-sm font-normal">(الاسم واللقب والتوقيع)</p></div>
                     <div class="col-6"><p class="mb-0">الامضـــــــــاء</p></div>
                 </div>
             </div>
         </div>
 
+        <!-- BORDEREAU -->
         <div id="bordereau" class="content-section d-none">
-           <div class="white-box-nav d-flex justify-content-between mb-3 no-print align-items-center bg-white p-3 rounded shadow-sm border" style="width: 40%; margin: auto;">
+            <div class="white-box-nav d-flex justify-content-between mb-3 no-print align-items-center bg-white p-3 rounded shadow-sm border" style="width: 40%; margin: auto;">
                 <h4 class="fw-bold text-dark m-0">جدول إرسال (BE)</h4>
                 <div class="d-flex gap-2">
                     <button class="btn btn-dark btn-sm" onclick="backToDashboard()"><i class="fas fa-home"></i> الرئيسية</button>
@@ -401,84 +637,38 @@
                     <button class="btn btn-warning btn-sm text-white" onclick="downloadAsPNG('form-bordereau')">صورة</button>
                     <button class="btn btn-info btn-preview btn-sm text-white" onclick="toggleMode('bordereau')">معاينة</button>
                     <button class="btn btn-success btn-sm" onclick="saveArchive('جدول', 'be_subject_field', 'form-bordereau')">حفظ وأرشفة</button>
-                    <button class="btn btn-primary btn-sm" onclick="printDocument('bordereau')"><i class="fas fa-print"></i> طباعة</button>
+                    <button class="btn btn-primary btn-sm" onclick="printDocument('bordereau', 'form-bordereau')"><i class="fas fa-print"></i> طباعة</button>
                 </div>
             </div>
 
             <div class="model-container-reduced no-print mx-auto" style="width: 45%;">
-    
-    <div class="input-form-container p-3 bg-light rounded shadow-sm border-start border-4 border-success">
-        <h6 class="fw-bold mb-3 text-success text-center">
-            <i class="fas fa-folder-open me-2"></i> إدخال بيانات جدول الإرسال (BE)
-        </h6>
-        
-        <div class="row g-2">
-            <div class="col-md-4">
-                <label class="form-label fw-bold small">ولاية</label>
-                <input type="text" class="form-control form-control-sm" oninput="sync(this, 'be1')">
-            </div>
-            <div class="col-md-4">
-                <label class="form-label fw-bold small">رقم الجدول</label>
-                <input type="text" class="form-control form-control-sm" oninput="sync(this, 'be2')">
-            </div>
-            <div class="col-md-4">
-                <label class="form-label fw-bold small">السنة</label>
-                <input type="text" class="form-control form-control-sm" oninput="sync(this, 'be3')">
+                <div class="input-form-container p-3 bg-light rounded shadow-sm border-start border-4 border-success">
+                    <h6 class="fw-bold mb-3 text-success text-center"><i class="fas fa-folder-open me-2"></i> إدخال بيانات جدول الإرسال (BE)</h6>
+                    <div class="row g-2">
+                        <div class="col-md-4"><label class="form-label fw-bold small">ولاية</label><input type="text" class="form-control form-control-sm" oninput="sync(this, 'be1')"></div>
+                        <div class="col-md-4"><label class="form-label fw-bold small">رقم الجدول</label><input type="text" class="form-control form-control-sm" oninput="sync(this, 'be2')"></div>
+                        <div class="col-md-4"><label class="form-label fw-bold small">السنة</label><input type="text" class="form-control form-control-sm" oninput="sync(this, 'be3')"></div>
+                        <div class="col-md-4"><label class="form-label fw-bold small">التاريخ</label><input type="date" class="form-control form-control-sm" oninput="sync(this, 'be4')"></div>
+                        <div class="col-md-8"><label class="form-label fw-bold small text-success">إلى السيد وكيل الجمهورية لدى محكمة</label><input type="text" class="form-control form-control-sm border-success" oninput="sync(this, 'be5')"></div>
+                        <div class="col-md-12"><label class="form-label fw-bold small">الموضوع</label><input type="text" id="be_subject_field" class="form-control form-control-sm bg-white" value="إرسال محاضر معاينة مخالفة لقانون المياه." oninput="sync(this, 'be6')"></div>
+                        <div class="col-12 my-1"><hr class="opacity-10"></div>
+                        <div class="row g-2 align-items-end">
+                            <div class="col-md-9"><label class="form-label fw-bold small">البيان (نوع الوثيقة)</label><textarea class="form-control form-control-sm" rows="1" style="font-size: 0.8rem;" oninput="sync(this, 'be7')">محضر معاينة رقم: .... بتاريخ: ....</textarea></div>
+                            <div class="col-md-3"><label class="form-label fw-bold small">العدد</label><input type="number" id="bec1" class="form-control form-control-sm text-center be-calc" value="0" oninput="sync(this, 'be8'); calcBe();"></div>
+                            <div class="col-md-9"><textarea class="form-control form-control-sm" rows="1" style="font-size: 0.8rem;" oninput="sync(this, 'be9')">محضر سماع رقم: ....</textarea></div>
+                            <div class="col-md-3"><input type="number" id="bec2" class="form-control form-control-sm text-center be-calc" value="0" oninput="sync(this, 'be10'); calcBe();"></div>
+                            <div class="col-md-9"><textarea class="form-control form-control-sm" rows="1" style="font-size: 0.8rem;" oninput="sync(this, 'be11')">استدعاء رقم: .... بتاريخ: ....</textarea></div>
+                            <div class="col-md-3"><input type="number" id="bec3" class="form-control form-control-sm text-center be-calc" value="0" oninput="sync(this, 'be12'); calcBe();"></div>
+                        </div>
+                        <div class="col-12 mt-3"><label class="form-label fw-bold small">نسخة للإعلام إلى</label><input type="text" class="form-control form-control-sm" placeholder="مثلاً: السيد المدير الولائي" oninput="sync(this, 'be13')"></div>
+                    </div>
+                </div>
             </div>
             
-            <div class="col-md-4">
-                <label class="form-label fw-bold small">التاريخ</label>
-                <input type="date" class="form-control form-control-sm" oninput="sync(this, 'be4')">
-            </div>
-            <div class="col-md-8">
-                <label class="form-label fw-bold small text-success">إلى السيد وكيل الجمهورية لدى محكمة</label>
-                <input type="text" class="form-control form-control-sm border-success" oninput="sync(this, 'be5')">
-            </div>
-            
-            <div class="col-md-12">
-                <label class="form-label fw-bold small">الموضوع</label>
-                <input type="text" id="be_subject_field" class="form-control form-control-sm bg-white" value="إرسال محاضر معاينة مخالفة لقانون المياه." oninput="sync(this, 'be6')">
-            </div>
-            
-            <div class="col-12 my-1"><hr class="opacity-10"></div>
-            
-            <div class="row g-2 align-items-end">
-                <div class="col-md-9">
-                    <label class="form-label fw-bold small">البيان (نوع الوثيقة)</label>
-                    <textarea class="form-control form-control-sm" rows="1" style="font-size: 0.8rem;" oninput="sync(this, 'be7')">محضر معاينة رقم: .... بتاريخ: ....</textarea>
-                </div>
-                <div class="col-md-3">
-                    <label class="form-label fw-bold small">العدد</label>
-                    <input type="number" id="bec1" class="form-control form-control-sm text-center be-calc" value="0" oninput="sync(this, 'be8'); calcBe();">
-                </div>
-
-                <div class="col-md-9">
-                    <textarea class="form-control form-control-sm" rows="1" style="font-size: 0.8rem;" oninput="sync(this, 'be9')">محضر سماع رقم: ....</textarea>
-                </div>
-                <div class="col-md-3">
-                    <input type="number" id="bec2" class="form-control form-control-sm text-center be-calc" value="0" oninput="sync(this, 'be10'); calcBe();">
-                </div>
-
-                <div class="col-md-9">
-                    <textarea class="form-control form-control-sm" rows="1" style="font-size: 0.8rem;" oninput="sync(this, 'be11')">استدعاء رقم: .... بتاريخ: ....</textarea>
-                </div>
-                <div class="col-md-3">
-                    <input type="number" id="bec3" class="form-control form-control-sm text-center be-calc" value="0" oninput="sync(this, 'be12'); calcBe();">
-                </div>
-            </div>
-
-            <div class="col-12 mt-3">
-                <label class="form-label fw-bold small">نسخة للإعلام إلى</label>
-                <input type="text" class="form-control form-control-sm" placeholder="مثلاً: السيد المدير الولائي" oninput="sync(this, 'be13')">
-            </div>
-        </div>
-    </div>
-</div>
             <div class="a4-page shadow" id="form-bordereau">
                 <div class="header-official text-center">
                     <h4>الجمهورية الجزائرية الديمقراطية الشعبية</h4>
-                    
-                        <h4>وزارة الري</h4>
+                    <h4>وزارة الري</h4>
                     <div class="text-end mt-2" style="font-size: 0.9rem;">مديرية الري لولاية: <input type="text" id="be1" class="input-line" style="width:120px;"></div>
                 </div>
                 <div class="d-flex justify-content-between mt-4 px-3">
@@ -495,7 +685,7 @@
                     <tbody>
                         <tr><td>01</td><td><textarea id="be7" class="w-100 border-0 text-center bg-transparent" rows="2"></textarea></td><td><input type="text" id="be8" class="input-line text-center w-100" value="0"></td><td>/</td></tr>
                         <tr><td>02</td><td><textarea id="be9" class="w-100 border-0 text-center bg-transparent" rows="2"></textarea></td><td><input type="text" id="be10" class="input-line text-center w-100" value="0"></td><td>/</td></tr>
-                         <tr><td>03</td><td><textarea id="be11" class="w-100 border-0 text-center bg-transparent" rows="2"></textarea></td><td><input type="text" id="be12" class="input-line text-center w-100" value="0"></td><td>/</td></tr>
+                        <tr><td>03</td><td><textarea id="be11" class="w-100 border-0 text-center bg-transparent" rows="2"></textarea></td><td><input type="text" id="be12" class="input-line text-center w-100" value="0"></td><td>/</td></tr>
                         <tr class="fw-bold"><td>/</td><td class="text-center">المجمـــــــوع:</td><td><input type="text" id="be_total" class="input-line text-center w-100" value="0" readonly></td><td>/</td></tr>
                     </tbody>
                 </table>
@@ -506,202 +696,1019 @@
             </div>
         </div>
 
+        <!-- ARCHIVE -->
         <div id="archive" class="content-section d-none">
-<div class="white-box-nav d-flex justify-content-center mb-3 no-print bg-white p-3 rounded shadow-sm border" style="width: 120%; margin: auto;">
+            <div class="white-box-nav d-flex justify-content-center mb-3 no-print bg-white p-3 rounded shadow-sm border" style="width: 120%; margin: auto;">
                 <button class="btn btn-dark btn-sm" onclick="backToDashboard()"><i class="fas fa-home"></i> العودة للرئيسية</button>
-            <h5 class="fw-bold mb-6 text-center">الأرشيف المركزي</h4>
-            <div class="table-responsive bg-white p-4 rounded shadow-sm mx-auto" style="width: 400%;">
-                <table class="table table-sm table-hover text-center small">
-                    <thead class="table-dark"><tr><th>النوع</th><th>المعني</th><th>إجراءات</th></tr></thead>
-                    <tbody id="archive-list"></tbody>
-                </table>
+                <h5 class="fw-bold mb-6 text-center" id="archive-title"><i class="fas fa-server me-2"></i>الأرشيف المركزي</h5>
+                <div class="table-responsive bg-white p-4 rounded shadow-sm mx-auto" style="width: 400%;">
+                    <table class="table table-sm table-hover text-center small">
+                        <thead class="table-dark"><tr><th>النوع</th><th>المعني</th><th>المحرر</th><th>إجراءات</th></tr></thead>
+                        <tbody id="archive-list"></tbody>
+                    </table>
+                </div>
             </div>
         </div>
-    </div>
-</div>
-  <div id="legal-file" class="content-section d-none">
-<div class="white-box-nav d-flex justify-content-center mb-2 no-print bg-white p-2 rounded shadow-sm border" style="width: 70%; margin: auto;">
+
+        <!-- LEGAL FILE -->
+        <div id="legal-file" class="content-section d-none">
+            <div class="white-box-nav d-flex justify-content-center mb-2 no-print bg-white p-2 rounded shadow-sm border" style="width: 70%; margin: auto;">
                 <button class="btn btn-dark btn-sm" onclick="backToDashboard()"><i class="fas fa-home"></i> العودة للرئيسية</button>
- <div class="app-nav no-print">
-       
-        <span id="nav-title" class="fw-bold small"></span>
-    </div>
-    <div class="d-flex justify-content-between align-items-center mb-3 no-print">
-        <h4 class="fw-bold text-white shadow-sm px-3 py-2 rounded bg-primary">
-            <i class="fas fa-file-pdf me-2"></i> قانون المياه الجزائري
-        </h4>
-        <div class="btn-group">
-            <button class="btn btn-warning btn-sm fw-bold" onclick="toggleFullScreen('pdf-frame')">
-                <i class="fas fa-expand"></i> تكبير العرض
-            </button>
-            <a href="law.pdf" target="_blank" class="btn btn-light btn-sm fw-bold">
-                <i class="fas fa-external-link-alt"></i> فتح في نافذة جديدة
-            </a>
+                <div class="app-nav no-print"><span id="nav-title" class="fw-bold small"></span></div>
+            </div>
+            <div class="d-flex justify-content-between align-items-center mb-3 no-print">
+                <h4 class="fw-bold text-white shadow-sm px-3 py-2 rounded bg-primary"><i class="fas fa-file-pdf me-2"></i> قانون المياه الجزائري</h4>
+                <div class="btn-group">
+                    <button class="btn btn-warning btn-sm fw-bold" onclick="toggleFullScreen('pdf-frame')"><i class="fas fa-expand"></i> تكبير العرض</button>
+                    <a href="law.pdf" target="_blank" class="btn btn-light btn-sm fw-bold"><i class="fas fa-external-link-alt"></i> فتح في نافذة جديدة</a>
+                </div>
+            </div>
+            <div class="pdf-viewer-container shadow-lg rounded-4 overflow-hidden bg-white" style="height: 85vh; border: 4px solid #f39c12;">
+                <iframe id="pdf-frame" src="law.pdf#view=FitH" width="100%" height="100%" style="border: none;"></iframe>
+            </div>
         </div>
-    </div>
-    
-    <div class="pdf-viewer-container shadow-lg rounded-4 overflow-hidden bg-white" style="height: 85vh; border: 4px solid #f39c12;">
-        <iframe id="pdf-frame" src="law.pdf#view=FitH" width="100%" height="100%" style="border: none;"></iframe>
+
     </div>
 </div>
 
 <script>
-    // وظيفة تكبير الملف القانوني لملء الشاشة
-    function toggleFullScreen(elementId) {
-        const elem = document.getElementById(elementId);
-        if (elem.requestFullscreen) {
-            elem.requestFullscreen();
-        } else if (elem.webkitRequestFullscreen) { /* Safari */
-            elem.webkitRequestFullscreen();
-        } else if (elem.msRequestFullscreen) { /* IE11 */
-            elem.msRequestFullscreen();
-        }
-    }
+// ==========================================
+// BASE DE DONNÉES DES INSPECTEURS
+// ==========================================
+const inspectorsDatabase = {
+    "ADMIN-BATNA-2025": { name: { ar: "المشرف العام", en: "General Supervisor" }, pin: "2025", role: "admin" },
+    "WAT-05-01": { name: { ar: "مفتش رقم 01", en: "Inspector 01" }, pin: "linda", role: "inspector" },
+    "WAT-05-02": { name: { ar: "مفتش رقم 02", en: "Inspector 02" }, pin: "bravo", role: "inspector" },
+    "WAT-05-03": { name: { ar: "مفتش رقم 03", en: "Inspector 03" }, pin: "tongo", role: "inspector" },
+    "WAT-05-04": { name: { ar: "مفتش رقم 04", en: "Inspector 04" }, pin: "alfa", role: "inspector" },
+    "WAT-05-05": { name: { ar: "مفتش رقم 05", en: "Inspector 05" }, pin: "bita", role: "inspector" },
+    "WAT-05-06": { name: { ar: "مفتش رقم 06", en: "Inspector 06" }, pin: "zita", role: "inspector" },
+    "WAT-05-07": { name: { ar: "مفتش رقم 07", en: "Inspector 07" }, pin: "kasty", role: "inspector" },
+    "WAT-05-08": { name: { ar: "مفتش رقم 08", en: "Inspector 08" }, pin: "lima", role: "inspector" },
+    "WAT-05-09": { name: { ar: "مفتش رقم 09", en: "Inspector 09" }, pin: "lina", role: "inspector" },
+    "WAT-05-010": { name: { ar: "مفتش رقم 10", en: "Inspector 10" }, pin: "mira", role: "inspector" },
+    "WAT-05-011": { name: { ar: "مفتش رقم 11", en: "Inspector 11" }, pin: "lida", role: "inspector" },
+    "WAT-05-012": { name: { ar: "مفتش رقم 12", en: "Inspector 12" }, pin: "ravo", role: "inspector" },
+    "WAT-05-013": { name: { ar: "مفتش رقم 13", en: "Inspector 13" }, pin: "ongo", role: "inspector" },
+    "WAT-05-014": { name: { ar: "مفتش رقم 14", en: "Inspector 14" }, pin: "lafa", role: "inspector" },
+    "WAT-05-015": { name: { ar: "مفتش رقم 15", en: "Inspector 15" }, pin: "ital", role: "inspector" },
+    "WAT-05-016": { name: { ar: "مفتش رقم 16", en: "Inspector 16" }, pin: "vita", role: "inspector" },
+    "WAT-05-017": { name: { ar: "مفتش رقم 17", en: "Inspector 17" }, pin: "pasty", role: "inspector" },
+    "WAT-05-018": { name: { ar: "مفتش رقم 18", en: "Inspector 18" }, pin: "limas", role: "inspector" },
+    "WAT-05-019": { name: { ar: "مفتش رقم 19", en: "Inspector 19" }, pin: "lana", role: "inspector" },
+    "WAT-05-020": { name: { ar: "مفتش رقم 20", en: "Inspector 20" }, pin: "nira", role: "inspector" }
+};
 
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzKOM-4CllND2673SrlcRoqrZR4RMyPDECiPVdaEbY4QLvpIvTB2ikorp7rOdjAt-cP/exec";
-    const PIN = "2026"; 
+const CURRENT_YEAR = new Date().getFullYear();
+const DEFAULT_WILAYA = "";
+let myCharts = { insp: null, time: null };
 
-    function handleLogin(e) {
-        e.preventDefault();
-        if(document.getElementById('auth_pin').value === PIN) {
-            sessionStorage.setItem('isLogged', 'true');
-            checkLogin();
-        } else { alert("❌ الرقم السري خطأ!"); }
-    }
+// ==========================================
+// CONFIGURATION GOOGLE APPS SCRIPT
+// ==========================================
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzaSkhTXSyg49_-7O6BfytEe24kRPhQHAJOaTm3n_OvBA_3LXrj2LHPiJLiB4vUYo1i/exec";
 
-    function checkLogin() {
-        if(sessionStorage.getItem('isLogged')) {
-            document.getElementById('login-screen').style.display = 'none';
-            document.getElementById('main-dashboard').style.display = 'grid';
-            document.getElementById('app-interface').style.display = 'none';
-        }
-    }
+// ==========================================
+// INITIALISATION CORRIGÉE - EXÉCUTION IMMÉDIATE
+// ==========================================
 
-    function openSection(id) {
-        document.getElementById('main-dashboard').style.display = 'none';
-        document.getElementById('app-interface').style.display = 'block';
-        document.querySelector('.app-nav').style.display = 'flex';
-        document.querySelectorAll('.content-section').forEach(s => s.classList.add('d-none'));
-        document.getElementById(id).classList.remove('d-none');
+// Exécution immédiate dès que le DOM est prêt
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initApp);
+} else {
+    // DOM déjà chargé, exécuter immédiatement
+    initApp();
+}
+
+function initApp() {
+    console.log("=== INITIALISATION DE L'APPLICATION ===");
+    
+    // 1. Remplir la liste des inspecteurs IMMÉDIATEMENT
+    const select = document.getElementById('auth_identity');
+    if (select) {
+        console.log("Remplissage de la liste des inspecteurs...");
         
-        const titles = {'pv-infraction':'محضر معاينة','pv-audition':'محضر سماع','convocation':'استدعاء','bordereau':'جدول إرسال','legal-file':'قانون المياه','archive':'الأرشيف'};
-        document.getElementById('nav-title').innerText = titles[id];
-        if(id === 'archive') renderArchive();
+        // Vider complètement et recréer
+        select.innerHTML = '<option value="" disabled selected>اختر الهوية...</option>';
+        
+        // Ajouter chaque inspecteur
+        Object.entries(inspectorsDatabase).forEach(([id, data]) => {
+            const option = document.createElement('option');
+            option.value = id;
+            option.textContent = data.name.ar;
+            select.appendChild(option);
+            console.log(`Ajouté: ${id} - ${data.name.ar}`);
+        });
+        
+        console.log(`Total: ${Object.keys(inspectorsDatabase).length} inspecteurs chargés`);
+    } else {
+        console.error("ERREUR: Élément auth_identity non trouvé!");
     }
+    
+    // 2. Vérifier si déjà connecté
+    checkLogin();
+}
 
-    function backToDashboard() {
+// ==========================================
+// FONCTIONS UTILITAIRES
+// ==========================================
+
+function checkUserRole() {
+    return sessionStorage.getItem('userRole') || 'inspector';
+}
+
+function isAdmin() {
+    return checkUserRole() === 'admin';
+}
+
+function getCurrentUserName() {
+    return sessionStorage.getItem('userName') || 'مفتش';
+}
+
+// ==========================================
+// FONCTIONS DE LOGIN
+// ==========================================
+
+function handleLogin(e) {
+    e.preventDefault();
+    
+    const identityId = document.getElementById('auth_identity').value;
+    const pin = document.getElementById('auth_pin').value;
+    
+    console.log("Tentative de connexion:", identityId);
+    
+    // Vérifier si une identité est sélectionnée
+    if (!identityId) {
+        alert("❌ الرجاء اختيار الهوية المهنية!");
+        return;
+    }
+    
+    const userData = inspectorsDatabase[identityId];
+    
+    if (!userData) {
+        alert("❌ الهوية غير موجودة!");
+        return;
+    }
+    
+    if (userData.pin !== pin) {
+        alert("❌ رمز الدخول غير صحيح!");
+        return;
+    }
+    
+    // Succès
+    sessionStorage.setItem('isLogged', 'true');
+    sessionStorage.setItem('userKey', identityId);
+    sessionStorage.setItem('userName', userData.name.ar);
+    sessionStorage.setItem('userRole', userData.role);
+    
+    console.log("Connexion réussie:", userData.name.ar);
+    
+    // Masquer login et afficher dashboard
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('main-dashboard').style.display = 'grid';
+    document.getElementById('app-interface').style.display = 'none';
+    
+    // Configurer le dashboard
+    initDashboard();
+    
+    // Auto-remplissage des champs agent
+    setTimeout(() => {
+        document.querySelectorAll('.agent-auto-fill').forEach(el => {
+            el.value = userData.name.ar;
+            el.dispatchEvent(new Event('input'));
+        });
+    }, 100);
+    
+    updateOnlineStatus();
+}
+
+function checkLogin() {
+    if (sessionStorage.getItem('isLogged') === 'true') {
+        document.getElementById('login-screen').style.display = 'none';
         document.getElementById('main-dashboard').style.display = 'grid';
         document.getElementById('app-interface').style.display = 'none';
-    }
-
-    function sync(el, tid) {
-        const target = document.getElementById(tid);
-        if(target) {
-            if(target.tagName === "INPUT") target.value = el.value;
-            else target.innerText = el.value;
+        
+        initDashboard();
+        
+        const userName = sessionStorage.getItem('userName');
+        if (userName) {
+            setTimeout(() => {
+                document.querySelectorAll('.agent-auto-fill').forEach(el => {
+                    el.value = userName;
+                    el.dispatchEvent(new Event('input'));
+                });
+            }, 100);
+            updateOnlineStatus();
         }
     }
+}
 
-    function calcBe() {
-        const v1 = parseInt(document.getElementById('bec1').value) || 0;
-        const v2 = parseInt(document.getElementById('bec2').value) || 0;
-        document.getElementById('be_total').value = v1 + v2;
+function logout() {
+    const user = sessionStorage.getItem('userName');
+    if (user) {
+        let onlineStatus = {};
+        try {
+            const stored = localStorage.getItem('water_police_online_v3');
+            if (stored) onlineStatus = JSON.parse(stored);
+        } catch (e) {}
+        delete onlineStatus[user];
+        localStorage.setItem('water_police_online_v3', JSON.stringify(onlineStatus));
     }
+    sessionStorage.clear();
+    location.reload();
+}
 
-    async function saveArchive(type, nameFieldId, containerId) {
-        const nameVal = document.getElementById(nameFieldId).value;
-        if(!nameVal) return alert("⚠️ أدخل الاسم");
-        const container = document.getElementById(containerId);
-        container.querySelectorAll('input').forEach(i => i.setAttribute('value', i.value));
-        const payload = { type, name: nameVal, date: new Date().toLocaleString('ar-DZ'), html: container.innerHTML };
-        
-        let db = JSON.parse(localStorage.getItem('water_pol_v4') || "[]");
-        db.push(payload);
-        localStorage.setItem('water_pol_v4', JSON.stringify(db));
-
-        try { fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) }); } catch(e) {}
-        alert("✅ تم الحفظ بنجاح");
-        renderArchive();
+function initDashboard() {
+    const userRole = checkUserRole();
+    const statsItem = document.getElementById('stats-dashboard-item');
+    
+    if (userRole !== 'admin' && statsItem) {
+        statsItem.style.display = 'none';
+    } else if (statsItem) {
+        statsItem.style.display = 'block';
     }
+}
 
-    function renderArchive() {
-        const arc = JSON.parse(localStorage.getItem('water_pol_v4') || "[]");
-        const list = document.getElementById('archive-list');
-        if(!list) return;
-        list.innerHTML = arc.slice().reverse().map((d, i) => {
-            const realIndex = arc.length - 1 - i;
-            return `<tr><td>${d.type}</td><td>${d.name}</td><td>
-                <button class="btn btn-xs btn-info text-white" onclick="viewDoc(${realIndex})">عرض</button>
-                <button class="btn btn-xs btn-danger" onclick="deleteDoc(${realIndex})">حذف</button>
-            </td></tr>`;
-        }).join('');
+// ==========================================
+// NAVIGATION
+// ==========================================
+
+function openSection(id) {
+    const userRole = checkUserRole();
+    
+    if (id === 'stats-section' && userRole !== 'admin') {
+        alert("⛔ عذراً، هذه الصفحة مخصصة للمشرف العام فقط");
+        return;
     }
+    
+    document.getElementById('main-dashboard').style.display = 'none';
+    document.getElementById('app-interface').style.display = 'block';
+    document.querySelectorAll('.content-section').forEach(s => s.classList.add('d-none'));
+    document.getElementById(id).classList.remove('d-none');
+    
+    const titles = {
+        'pv-infraction':'محضر معاينة',
+        'pv-audition':'محضر سماع',
+        'convocation':'استدعاء',
+        'bordereau':'جدول إرسال',
+        'legal-file':'قانون المياه',
+        'archive':'الأرشيف',
+        'chat-section':'المركز الداخلي',
+        'stats-section':'الإحصائيات'
+    };
+    
+    const navTitle = document.getElementById('nav-title');
+    if(navTitle) navTitle.innerText = titles[id];
+    
+    if(id === 'chat-section') {
+        startChatSystem();
+    } else {
+        stopChatSystem();
+    }
+    
+    if(id === 'stats-section') updateStats();
+    if(id === 'archive') renderArchive();
+}
 
-    function deleteDoc(index) {
-        if(confirm("حذف؟")) {
-            let arc = JSON.parse(localStorage.getItem('water_pol_v4') || "[]");
-            arc.splice(index, 1);
-            localStorage.setItem('water_pol_v4', JSON.stringify(arc));
-            renderArchive();
+function backToDashboard() {
+    document.getElementById('main-dashboard').style.display = 'grid';
+    document.getElementById('app-interface').style.display = 'none';
+    stopChatSystem();
+}
+
+function sync(el, tid) {
+    const target = document.getElementById(tid);
+    if(target) {
+        if(target.tagName === "INPUT" || target.tagName === "TEXTAREA") {
+            target.value = el.value;
+        } else {
+            target.textContent = el.value;
         }
     }
+}
 
-    function viewDoc(i) {
-        const arc = JSON.parse(localStorage.getItem('water_pol_v4'));
-        const w = window.open('', '_blank');
+function calcBe() {
+    const v1 = parseInt(document.getElementById('bec1').value) || 0;
+    const v2 = parseInt(document.getElementById('bec2').value) || 0;
+    const v3 = parseInt(document.getElementById('bec3').value) || 0;
+    document.getElementById('be_total').value = v1 + v2 + v3;
+}
+
+// ==========================================
+// SYSTÈME DE CHAT
+// ==========================================
+
+let lastMessageTimestamp = 0;
+let chatInterval = null;
+let isChatConnected = false;
+let messageHistory = [];
+
+function startChatSystem() {
+    fetchMessagesFromCloud();
+    chatInterval = setInterval(fetchMessagesFromCloud, 3000);
+    setInterval(updateOnlineStatus, 5000);
+    updateOnlineStatus();
+}
+
+function stopChatSystem() {
+    if (chatInterval) {
+        clearInterval(chatInterval);
+        chatInterval = null;
+    }
+}
+
+async function fetchMessagesFromCloud() {
+    try {
+        const url = `${SCRIPT_URL}?action=getMessages&t=${Date.now()}`;
+        const response = await fetch(url, {
+            method: 'GET',
+            mode: 'cors',
+            headers: { 'Accept': 'application/json' }
+        });
         
-        // جلب الأنماط الحالية
-        const styles = Array.from(document.querySelectorAll('style, link[rel="stylesheet"]')).map(s => s.outerHTML).join('');
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const messages = await response.json();
         
-        w.document.write(`
-            <html>
-                <head>
-                    ${styles}
-                    <style>
-                        /* إخفاء أي صور شعارات قد تتسرب من صفحة الدخول أو التنسيقات العامة */
-                        #login-screen, img[src*="image_0.png"], img[src*="PE01.png"] { 
-                            display: none !important; 
-                        }
-                        body { background: #eee; padding: 20px; }
-                        .a4-page { display: block !important; margin: auto; box-shadow: 0 0 10px rgba(0,0,0,0.5); }
-                    </style>
-                </head>
-                <body>
-                    <div class="a4-page">
-                        ${arc[i].html}
+        if (!Array.isArray(messages)) {
+            console.warn('Invalid response format:', messages);
+            return;
+        }
+        
+        updateChatConnectionStatus(true);
+        
+        if (messages.length > 0) {
+            const latestTimestamp = Math.max(...messages.map(m => m.timestamp || 0));
+            if (latestTimestamp > lastMessageTimestamp || messages.length !== messageHistory.length) {
+                lastMessageTimestamp = latestTimestamp;
+                messageHistory = messages;
+                renderChatFromData(messages);
+            }
+        } else {
+            renderChatFromData([]);
+        }
+    } catch (error) {
+        console.error('Error fetching messages:', error);
+        updateChatConnectionStatus(false);
+        const cached = localStorage.getItem('water_police_chat_cache');
+        if (cached) {
+            try {
+                renderChatFromData(JSON.parse(cached));
+            } catch (e) {
+                renderEmptyChat();
+            }
+        } else {
+            renderEmptyChat();
+        }
+    }
+}
+
+function renderChatFromData(messages) {
+    const chatBox = document.getElementById('chat-messages');
+    if (!chatBox) return;
+    
+    const currentUser = getCurrentUserName();
+    
+    if (messages.length === 0) {
+        renderEmptyChat();
+        return;
+    }
+    
+    const sortedMessages = messages.sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
+    const recentMessages = sortedMessages.slice(-50);
+    
+    chatBox.innerHTML = recentMessages.map(m => `
+        <div class="message-bubble ${m.sender === currentUser ? 'message-sent' : 'message-received'}">
+            <div class="d-flex justify-content-between align-items-center mb-1">
+                <span class="fw-bold small">${escapeHtml(m.sender)}</span>
+                <span class="small opacity-75">${m.time || ''}</span>
+            </div>
+            <div>${escapeHtml(m.text)}</div>
+        </div>
+    `).join('');
+    
+    chatBox.scrollTop = chatBox.scrollHeight;
+    localStorage.setItem('water_police_chat_cache', JSON.stringify(messages));
+}
+
+function renderEmptyChat() {
+    const chatBox = document.getElementById('chat-messages');
+    if (chatBox) {
+        chatBox.innerHTML = `
+            <div class="text-center text-muted py-5">
+                <i class="fas fa-comments fa-3x mb-3 opacity-25"></i>
+                <p>لا توجد رسائل بعد. ابدأ المحادثة!</p>
+            </div>
+        `;
+    }
+}
+
+async function sendMessage() {
+    const input = document.getElementById('msg-input');
+    if (!input || !input.value.trim()) return;
+    
+    const currentUser = getCurrentUserName();
+    const text = input.value.trim();
+    input.value = "";
+    
+    const messageData = {
+        action: 'sendMessage',
+        sender: currentUser,
+        text: text,
+        time: new Date().toLocaleTimeString('ar-DZ', {hour: '2-digit', minute:'2-digit'}),
+        date: new Date().toLocaleDateString('ar-DZ'),
+        timestamp: new Date().getTime()
+    };
+    
+    const optimisticMsg = {
+        sender: currentUser,
+        text: text,
+        time: messageData.time,
+        timestamp: messageData.timestamp
+    };
+    messageHistory.push(optimisticMsg);
+    renderChatFromData(messageHistory);
+    
+    try {
+        await fetch(SCRIPT_URL, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(messageData)
+        });
+        setTimeout(fetchMessagesFromCloud, 500);
+    } catch (error) {
+        console.error('Error sending message:', error);
+        alert('فشل إرسال الرسالة');
+        input.value = text;
+    }
+}
+
+function handleChatKeyPress(event) {
+    if (event.key === 'Enter') sendMessage();
+}
+
+function updateChatConnectionStatus(connected) {
+    const statusEl = document.getElementById('chat-connection-status');
+    const statusText = document.getElementById('chat-status-text');
+    
+    if (!statusEl || !statusText) return;
+    
+    isChatConnected = connected;
+    
+    if (connected) {
+        statusEl.className = 'online-indicator';
+        statusText.textContent = 'متصل';
+        statusText.className = 'me-2 text-success small';
+    } else {
+        statusEl.className = 'offline-indicator';
+        statusText.textContent = 'غير متصل';
+        statusText.className = 'me-2 text-danger small';
+    }
+}
+
+function updateOnlineStatus() {
+    const user = getCurrentUserName();
+    if (!user) return;
+    
+    let onlineStatus = {};
+    try {
+        const stored = localStorage.getItem('water_police_online_v3');
+        if (stored) onlineStatus = JSON.parse(stored);
+    } catch (e) {}
+    
+    onlineStatus[user] = {
+        timestamp: new Date().getTime(),
+        name: user
+    };
+    
+    localStorage.setItem('water_police_online_v3', JSON.stringify(onlineStatus));
+    renderOnlineUsers(onlineStatus);
+}
+
+function renderOnlineUsers(onlineStatus) {
+    const listEl = document.getElementById('online-users-list');
+    if (!listEl) return;
+    
+    const now = new Date().getTime();
+    const timeout = 60000;
+    
+    let html = '';
+    let count = 0;
+    
+    for (const [key, data] of Object.entries(onlineStatus)) {
+        if (data.timestamp && (now - data.timestamp < timeout)) {
+            html += `
+                <div class="d-flex align-items-center gap-2 p-2 border-bottom">
+                    <span class="online-indicator"></span>
+                    <span class="small">${data.name}</span>
+                    <span class="badge bg-success ms-auto">نشط</span>
+                </div>
+            `;
+            count++;
+        }
+    }
+    
+    if (count === 0) {
+        listEl.innerHTML = '<div class="text-center text-muted py-4">لا أحد متصل حالياً</div>';
+    } else {
+        listEl.innerHTML = html;
+    }
+}
+
+// ==========================================
+// SYSTÈME DE STATISTIQUES
+// ==========================================
+
+function updateStats() {
+    if (!isAdmin()) {
+        alert("⛔ غير مصرح لك بالوصول إلى هذه الصفحة");
+        backToDashboard();
+        return;
+    }
+    
+    const arch = JSON.parse(localStorage.getItem('water_pol_v4') || "[]");
+    updateStatCards(arch);
+    updateCharts(arch);
+    updateStatsTable(arch);
+    
+    const statsTitle = document.getElementById('stats-title');
+    if (statsTitle) {
+        statsTitle.innerHTML = '<i class="fas fa-chart-line me-2 text-success"></i>إحصائيات جميع المفتشين';
+    }
+}
+
+function updateStatCards(arch) {
+    document.getElementById('total-docs-stat').textContent = arch.length;
+    
+    const now = new Date().getTime();
+    const oneDay = 24 * 60 * 60 * 1000;
+    const recentCount = arch.filter(item => {
+        const itemDate = new Date(item.timestamp || item.date);
+        return (now - itemDate.getTime()) < oneDay;
+    }).length;
+    document.getElementById('recent-docs-stat').textContent = recentCount;
+    
+    const currentMonth = new Date().getMonth();
+    const currentYear = new Date().getFullYear();
+    const monthCount = arch.filter(item => {
+        const itemDate = new Date(item.timestamp || item.date);
+        return itemDate.getMonth() === currentMonth && itemDate.getFullYear() === currentYear;
+    }).length;
+    document.getElementById('month-docs-stat').textContent = monthCount;
+    
+    const inspCount = {};
+    arch.forEach(item => {
+        const inspector = item.inspector || item.sender || 'غير معروف';
+        inspCount[inspector] = (inspCount[inspector] || 0) + 1;
+    });
+    
+    const topInspector = Object.entries(inspCount).sort((a, b) => b[1] - a[1])[0];
+    if (topInspector) {
+        document.getElementById('top-inspector-stat').textContent = topInspector[0];
+    } else {
+        document.getElementById('top-inspector-stat').textContent = '-';
+    }
+}
+
+function updateCharts(arch) {
+    const inspData = {};
+    arch.forEach(item => {
+        const inspector = item.inspector || item.sender || 'غير معروف';
+        inspData[inspector] = (inspData[inspector] || 0) + 1;
+    });
+    
+    if (myCharts.insp) myCharts.insp.destroy();
+    
+    const ctxInsp = document.getElementById('chartInspectors');
+    if (ctxInsp && Object.keys(inspData).length > 0) {
+        myCharts.insp = new Chart(ctxInsp, {
+            type: 'doughnut',
+            data: {
+                labels: Object.keys(inspData),
+                datasets: [{
+                    data: Object.values(inspData),
+                    backgroundColor: ['#3498db', '#2ecc71', '#f39c12', '#e74c3c', '#9b59b6', '#1abc9c', '#34495e', '#95a5a6'],
+                    borderWidth: 2,
+                    borderColor: '#fff'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: { font: { family: 'Cairo', size: 12 }, padding: 15 }
+                    }
+                }
+            }
+        });
+    } else if (ctxInsp) {
+        ctxInsp.parentElement.innerHTML = '<div class="text-center text-muted py-5">لا توجد بيانات كافية</div>';
+    }
+    
+    const timeData = {};
+    arch.forEach(item => {
+        const date = item.date || new Date(item.timestamp).toLocaleDateString('ar-DZ');
+        timeData[date] = (timeData[date] || 0) + 1;
+    });
+    
+    const sortedDates = Object.keys(timeData).sort().slice(-7);
+    const sortedValues = sortedDates.map(d => timeData[d]);
+    
+    if (myCharts.time) myCharts.time.destroy();
+    
+    const ctxTime = document.getElementById('chartTime');
+    if (ctxTime && sortedDates.length > 0) {
+        myCharts.time = new Chart(ctxTime, {
+            type: 'line',
+            data: {
+                labels: sortedDates,
+                datasets: [{
+                    label: 'عدد المحاضر',
+                    data: sortedValues,
+                    borderColor: '#27ae60',
+                    backgroundColor: 'rgba(39, 174, 96, 0.1)',
+                    tension: 0.4,
+                    fill: true,
+                    pointBackgroundColor: '#27ae60',
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 2,
+                    pointRadius: 5
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { beginAtZero: true, ticks: { stepSize: 1, font: { family: 'Cairo' } } },
+                    x: { ticks: { font: { family: 'Cairo', size: 10 }, maxRotation: 45 } }
+                }
+            }
+        });
+    } else if (ctxTime) {
+        ctxTime.parentElement.innerHTML = '<div class="text-center text-muted py-5">لا توجد بيانات كافية</div>';
+    }
+}
+
+function updateStatsTable(arch) {
+    const tbody = document.getElementById('stats-table-body');
+    if (!tbody) return;
+    
+    const stats = {};
+    arch.forEach(item => {
+        const inspector = item.inspector || item.sender || 'غير معروف';
+        if (!stats[inspector]) {
+            stats[inspector] = { count: 0, lastActivity: item.timestamp || item.date };
+        }
+        stats[inspector].count++;
+        const itemTime = new Date(item.timestamp || item.date).getTime();
+        const currentLast = new Date(stats[inspector].lastActivity).getTime();
+        if (itemTime > currentLast) stats[inspector].lastActivity = item.timestamp || item.date;
+    });
+    
+    const total = arch.length;
+    const sortedStats = Object.entries(stats).sort((a, b) => b[1].count - a[1].count);
+    
+    if (sortedStats.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted py-4">لا توجد بيانات</td></tr>';
+        return;
+    }
+    
+    tbody.innerHTML = sortedStats.map(([inspector, data]) => {
+        const percentage = total > 0 ? ((data.count / total) * 100).toFixed(1) : 0;
+        const lastDate = new Date(data.lastActivity).toLocaleDateString('ar-DZ');
+        let progressColor = 'bg-primary';
+        if (percentage > 50) progressColor = 'bg-success';
+        else if (percentage > 25) progressColor = 'bg-info';
+        else if (percentage > 10) progressColor = 'bg-warning';
+        else progressColor = 'bg-secondary';
+        
+        return `
+            <tr>
+                <td class="fw-bold">${inspector}</td>
+                <td>${data.count}</td>
+                <td><small class="text-muted">${lastDate}</small></td>
+                <td style="width: 30%;">
+                    <div class="d-flex align-items-center">
+                        <div class="progress flex-grow-1 me-2" style="height: 8px;">
+                            <div class="progress-bar ${progressColor}" role="progressbar" style="width: ${percentage}%"></div>
+                        </div>
+                        <small class="text-muted">${percentage}%</small>
                     </div>
-                </body>
-            </html>
-        `);
-        w.document.close(); // لضمان تحميل المحتوى بالكامل
-    }
+                </td>
+            </tr>
+        `;
+    }).join('');
+}
 
-    async function saveAsPDF(elementId, fileName) {
-        const element = document.getElementById(elementId);
-        element.style.display = 'block';
-        const canvas = await html2canvas(element, { scale: 2 });
+// ==========================================
+// ARCHIVE
+// ==========================================
+
+async function saveArchive(type, nameFieldId, containerId) {
+    const nameVal = document.getElementById(nameFieldId).value;
+    if(!nameVal) return alert("⚠️ أدخل الاسم");
+    
+    const container = document.getElementById(containerId);
+    
+    // Synchroniser tous les inputs avant sauvegarde
+    container.querySelectorAll('input, textarea').forEach(i => {
+        i.setAttribute('value', i.value);
+        if(i.tagName === 'TEXTAREA') i.innerHTML = i.value;
+    });
+    
+    const inspector = getCurrentUserName();
+    
+    const payload = { 
+        type, 
+        name: nameVal, 
+        inspector: inspector,
+        date: new Date().toLocaleString('ar-DZ'), 
+        timestamp: new Date().getTime(),
+        html: container.innerHTML 
+    };
+    
+    // Sauvegarde locale
+    let db = JSON.parse(localStorage.getItem('water_pol_v4') || "[]");
+    db.push(payload);
+    localStorage.setItem('water_pol_v4', JSON.stringify(db));
+
+    // Sauvegarde cloud
+    try { 
+        await fetch(SCRIPT_URL, { 
+            method: 'POST', 
+            mode: 'no-cors', 
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                action: 'saveArchive',
+                data: payload
+            }) 
+        });
+        console.log('Données envoyées au cloud');
+    } catch(e) {
+        console.error('Erreur sauvegarde cloud:', e);
+    }
+    
+    alert("✅ تم الحفظ بنجاح");
+    renderArchive();
+}
+
+function renderArchive() {
+    const arc = JSON.parse(localStorage.getItem('water_pol_v4') || "[]");
+    const list = document.getElementById('archive-list');
+    const archiveTitle = document.getElementById('archive-title');
+    if(!list) return;
+    
+    const currentUser = getCurrentUserName();
+    const userRole = checkUserRole();
+    
+    let filteredArc = arc;
+    if (userRole !== 'admin') {
+        filteredArc = arc.filter(d => d.inspector === currentUser);
+    }
+    
+    if (archiveTitle) {
+        if (userRole === 'admin') {
+            archiveTitle.innerHTML = '<i class="fas fa-server me-2"></i>الأرشيف المركزي (جميع المفتشين)';
+        } else {
+            archiveTitle.innerHTML = '<i class="fas fa-user-lock me-2"></i>أرشيفي الشخصي';
+        }
+    }
+    
+    if (filteredArc.length === 0) {
+        list.innerHTML = `<tr><td colspan="4" class="text-center text-muted py-4">
+            <i class="fas fa-folder-open fa-2x mb-2 d-block"></i>
+            ${userRole === 'admin' ? 'الأرشيف فارغ' : 'لا توجد وثائق في أرشيفك الشخصي'}
+        </td></tr>`;
+        return;
+    }
+    
+    list.innerHTML = filteredArc.slice().reverse().map((d, i) => {
+        const realIndex = arc.indexOf(d);
+        const isOwner = d.inspector === currentUser;
+        const canDelete = isOwner || userRole === 'admin';
+        
+        const ownerBadge = userRole === 'admin' && d.inspector !== currentUser 
+            ? `<span class="badge bg-info ms-1">${d.inspector}</span>` 
+            : '';
+        
+        return `<tr>
+            <td><span class="badge bg-primary">${d.type}</span>${ownerBadge}</td>
+            <td>${d.name}</td>
+            <td>${d.inspector}</td>
+            <td>
+                <button class="btn btn-sm btn-info text-white me-1" onclick="viewDoc(${realIndex})"><i class="fas fa-eye"></i></button>
+                ${canDelete ? `<button class="btn btn-sm btn-danger" onclick="deleteDoc(${realIndex})"><i class="fas fa-trash"></i></button>` : ''}
+            </td>
+        </tr>`;
+    }).join('');
+}
+
+function deleteDoc(index) {
+    if(!confirm("هل أنت متأكد من حذف هذه الوثيقة؟")) return;
+    
+    let arc = JSON.parse(localStorage.getItem('water_pol_v4') || "[]");
+    
+    const currentUser = getCurrentUserName();
+    const userRole = checkUserRole();
+    const doc = arc[index];
+    
+    if (!doc) return;
+    
+    if (doc.inspector !== currentUser && userRole !== 'admin') {
+        alert("⛔ غير مصرح لك بحذف هذه الوثيقة");
+        return;
+    }
+    
+    arc.splice(index, 1);
+    localStorage.setItem('water_pol_v4', JSON.stringify(arc));
+    renderArchive();
+    
+    if (!document.getElementById('stats-section').classList.contains('d-none')) {
+        updateStats();
+    }
+}
+
+function viewDoc(i) {
+    const arc = JSON.parse(localStorage.getItem('water_pol_v4') || "[]");
+    const userRole = checkUserRole();
+    const currentUser = getCurrentUserName();
+    
+    if (!arc[i]) return;
+    if (userRole !== 'admin' && arc[i].inspector !== currentUser) {
+        alert("⛔ غير مصرح لك بعرض هذه الوثيقة");
+        return;
+    }
+    
+    const w = window.open('', '_blank');
+    
+    const styles = Array.from(document.querySelectorAll('style, link[rel="stylesheet"]')).map(s => s.outerHTML).join('');
+    
+    w.document.write(`
+        <html dir="rtl">
+            <head>
+                ${styles}
+                <style>
+                    #login-screen, img[src*="image_0.png"], img[src*="PE01.png"] { display: none !important; }
+                    body { background: #eee; padding: 20px; font-family: 'Cairo', sans-serif; }
+                    .a4-page { display: block !important; margin: auto; box-shadow: 0 0 10px rgba(0,0,0,0.5); }
+                </style>
+            </head>
+            <body>
+                <div class="a4-page">
+                    ${arc[i].html}
+                </div>
+                <div class="text-center mt-3 no-print">
+                    <button onclick="window.print()" class="btn btn-primary"><i class="fas fa-print"></i> طباعة</button>
+                    <button onclick="window.close()" class="btn btn-secondary me-2">إغلاق</button>
+                </div>
+            </body>
+        </html>
+    `);
+    w.document.close();
+}
+
+// ==========================================
+// EXPORT PDF ET IMAGE
+// ==========================================
+
+async function saveAsPDF(elementId, fileName) {
+    const element = document.getElementById(elementId);
+    if (!element) return;
+    
+    const originalDisplay = element.style.display;
+    element.style.display = 'block';
+    
+    try {
+        const canvas = await html2canvas(element, { 
+            scale: 2, 
+            useCORS: true,
+            backgroundColor: '#ffffff'
+        });
         const imgData = canvas.toDataURL('image/png');
         const { jsPDF } = window.jspdf;
         const pdf = new jsPDF('p', 'mm', 'a4');
         pdf.addImage(imgData, 'PNG', 0, 0, 210, 297);
-        pdf.save(`${fileName}.pdf`);
-        element.style.display = '';
+        pdf.save(`${fileName}_${Date.now()}.pdf`);
+    } catch (error) {
+        console.error('Erreur PDF:', error);
+        alert('حدث خطأ أثناء حفظ PDF');
+    } finally {
+        element.style.display = originalDisplay;
     }
+}
 
-    function downloadAsPNG(id) {
-        const element = document.getElementById(id);
-        element.style.display = 'block';
-        html2canvas(element, { scale: 2 }).then(canvas => {
-            let link = document.createElement('a'); link.download = "Document.png"; link.href = canvas.toDataURL(); link.click();
-            element.style.display = '';
-        });
+function downloadAsPNG(id) {
+    const element = document.getElementById(id);
+    if (!element) return;
+    
+    const originalDisplay = element.style.display;
+    element.style.display = 'block';
+    
+    html2canvas(element, { 
+        scale: 2,
+        backgroundColor: '#ffffff'
+    }).then(canvas => {
+        let link = document.createElement('a'); 
+        link.download = `Document_${Date.now()}.png`; 
+        link.href = canvas.toDataURL(); 
+        link.click();
+        element.style.display = originalDisplay;
+    }).catch(error => {
+        console.error('Erreur PNG:', error);
+        alert('حدث خطأ أثناء حفظ الصورة');
+        element.style.display = originalDisplay;
+    });
+}
+
+function toggleMode(id) { 
+    document.getElementById(id).classList.toggle('preview-mode'); 
+}
+
+// ==========================================
+// IMPRESSION CORRIGÉE
+// ==========================================
+
+function printDocument(sectionId, formId) {
+    // إزالة الطباعة النشطة من جميع الأقسام
+    document.querySelectorAll('.content-section').forEach(section => {
+        section.classList.remove('printing-active');
+    });
+    
+    // تفعيل الطباعة للقسم المستهدف فقط
+    const targetSection = document.getElementById(sectionId);
+    if (!targetSection) return;
+    
+    targetSection.classList.remove('d-none');
+    targetSection.classList.add('printing-active');
+    
+    // التأكد من ظهور صفحة A4
+    const a4Page = document.getElementById(formId);
+    if (a4Page) {
+        a4Page.style.display = 'block';
+        a4Page.style.visibility = 'visible';
     }
+    
+    // مزامنة القيم قبل الطباعة
+    syncAllInputs(targetSection);
+    
+    // إضافة class للbody للتحكم في الطباعة
+    document.body.classList.add('is-printing');
+    
+    // الطباعة بعد تأخير قصير للسماح بتحديث DOM
+    setTimeout(() => {
+        window.print();
+        
+        // استعادة الحالة بعد الطباعة
+        setTimeout(() => {
+            targetSection.classList.remove('printing-active');
+            document.body.classList.remove('is-printing');
+            if (a4Page) {
+                a4Page.style.display = '';
+                a4Page.style.visibility = '';
+            }
+        }, 500);
+    }, 400);
+}
 
-    function toggleMode(id) { document.getElementById(id).classList.toggle('preview-mode'); }
-    function printDocument() { window.print(); }
-    function logout() { sessionStorage.clear(); location.reload(); }
+function syncAllInputs(section) {
+    const inputs = section.querySelectorAll('input, textarea');
+    inputs.forEach(input => {
+        if (input.id) {
+            const target = document.getElementById(input.id);
+            if (target && target !== input) {
+                if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA') {
+                    target.value = input.value;
+                } else {
+                    target.textContent = input.value;
+                }
+            }
+        }
+        if (input.value) {
+            input.setAttribute('value', input.value);
+        }
+    });
+}
 
-    window.onload = checkLogin;
+function toggleFullScreen(elementId) {
+    const elem = document.getElementById(elementId);
+    if (elem.requestFullscreen) {
+        elem.requestFullscreen();
+    } else if (elem.webkitRequestFullscreen) {
+        elem.webkitRequestFullscreen();
+    } else if (elem.msRequestFullscreen) {
+        elem.msRequestFullscreen();
+    }
+}
+
+function escapeHtml(text) {
+    if (!text) return '';
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
 </script>
 </body>
 </html>
